@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>iSpark Invoice — Deployment Guide</title>
+<style>
+  body{font-family:Arial,sans-serif;max-width:860px;margin:40px auto;padding:0 20px;color:#333;line-height:1.7}
+  h1{color:#1a3a5c;border-bottom:3px solid #1565C0;padding-bottom:10px}
+  h2{color:#1565C0;margin-top:40px}
+  h3{color:#333;margin-top:24px}
+  code{background:#f4f4f4;padding:2px 7px;border-radius:4px;font-family:monospace;color:#c0392b}
+  pre{background:#1e1e1e;color:#d4d4d4;padding:18px;border-radius:8px;overflow-x:auto;font-size:13px}
+  .step{background:#E3F2FD;border-left:5px solid #1565C0;padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0}
+  .warn{background:#FFF8E1;border-left:5px solid #F9A825;padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0}
+  .success{background:#E8F5E9;border-left:5px solid #43A047;padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0}
+  table{border-collapse:collapse;width:100%}
+  th{background:#1a3a5c;color:#fff;padding:10px 14px;text-align:left}
+  td{padding:9px 14px;border-bottom:1px solid #eee}
+  tr:nth-child(even) td{background:#f9f9f9}
+  .badge{display:inline-block;background:#1565C0;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px}
+</style>
+</head>
+<body>
+
+<h1> iSpark Invoice Management — Complete Deployment Guide</h1>
+<p><strong>Stack:</strong> PHP 7.4+ · MySQL 5.7+ · HTML · CSS · Vanilla JavaScript<br/>
+<strong>Hosting:</strong> XAMPP (local) or cPanel Shared Hosting</p>
+
+<div class="success">
+  ✅ <strong>Default Login:</strong> Username: <code>admin</code> &nbsp; Password: <code>admin123</code>
+</div>
+
+<!-- ═══ SECTION 1: FOLDER STRUCTURE ═══ -->
+<h2>📁 Folder Structure</h2>
+<pre>
+ispark_invoice/
+├── api/
+│   ├── config.php        ← Database config & helper functions
+│   ├── auth.php          ← Login, logout, change password
+│   ├── schools.php       ← Schools CRUD
+│   ├── invoices.php      ← Invoices CRUD + dashboard + reports
+│   ├── payments.php      ← Payments CRUD
+│   ├── users.php         ← User management
+│   ├── invoice_pdf.php   ← Invoice PDF (print in browser)
+│   └── send_email.php    ← Email invoice (optional SMTP)
+├── brand/
+│   ├── header.jpg        ← Invoice header banner
+│   ├── footer.jpg        ← Invoice footer banner
+│   └── signature.png     ← Signature image
+├── frontend/
+│   ├── index.html        ← Main app entry point
+│   ├── css/
+│   │   ├── style.css
+│   │   └── components.css
+│   └── js/
+│       ├── api.js        ← All API calls
+│       ├── app.js        ← Routing
+│       ├── auth.js       ← Login/logout
+│       ├── utils.js      ← Helpers, charts, export
+│       └── pages/
+│           ├── dashboard.js
+│           ├── schools.js
+│           ├── invoices.js
+│           ├── payments.js
+│           ├── reports.js
+│           └── users.js
+├── .htaccess             ← Apache config (CORS + routing)
+├── database.sql          ← MySQL setup script
+└── DEPLOY_GUIDE.html     ← This file
+</pre>
+
+<!-- ═══ SECTION 2: LOCAL / XAMPP ═══ -->
+<h2>💻 Option A — Run Locally with XAMPP</h2>
+
+<div class="step">
+  <strong>Step 1 — Install XAMPP</strong><br/>
+  Download from <a href="https://www.apachefriends.org" target="_blank">apachefriends.org</a> and install.<br/>
+  Start <strong>Apache</strong> and <strong>MySQL</strong> from the XAMPP Control Panel.
+</div>
+
+<div class="step">
+  <strong>Step 2 — Copy project files</strong><br/>
+  Copy the entire <code>ispark_invoice</code> folder to:<br/>
+  <code>C:\xampp\htdocs\ispark_invoice\</code> (Windows)<br/>
+  <code>/opt/lampp/htdocs/ispark_invoice/</code> (Linux/Mac)
+</div>
+
+<div class="step">
+  <strong>Step 3 — Create the database</strong><br/>
+  Open <a href="http://localhost/phpmyadmin" target="_blank">http://localhost/phpmyadmin</a><br/>
+  Click <strong>Import</strong> → Choose file → select <code>database.sql</code> → Click <strong>Go</strong>.
+</div>
+
+<div class="step">
+  <strong>Step 4 — Update database config (if needed)</strong><br/>
+  Open <code>api/config.php</code> and verify:
+  <pre>define('DB_HOST', 'localhost');
+define('DB_NAME', 'stem_invoice');
+define('DB_USER', 'root');       // XAMPP default is root
+define('DB_PASS', '');           // XAMPP default is empty</pre>
+</div>
+
+<div class="step">
+  <strong>Step 5 — Open in browser</strong><br/>
+  Visit: <a href="http://localhost/ispark_invoice/frontend/" target="_blank">http://localhost/ispark_invoice/frontend/</a><br/>
+  Login with: <code>admin</code> / <code>admin123</code>
+</div>
+
+<div class="warn">
+  ⚠️ <strong>Edge/Chrome Tracking Prevention Warning for XLSX CDN:</strong><br/>
+  This is a browser warning, NOT an error. Excel export still works. To silence it,
+  download <code>xlsx.full.min.js</code> from cdnjs and place it in <code>frontend/js/</code>,
+  then update the script tag in <code>index.html</code> to use a local path.
+</div>
+
+<!-- ═══ SECTION 3: CPANEL ═══ -->
+<h2>🌐 Option B — Deploy to cPanel Shared Hosting</h2>
+
+<div class="step">
+  <strong>Step 1 — Log in to cPanel</strong><br/>
+  Go to your hosting control panel, e.g. <code>https://yourdomain.com/cpanel</code>
+</div>
+
+<div class="step">
+  <strong>Step 2 — Create MySQL Database</strong>
+  <ol>
+    <li>In cPanel → <strong>MySQL Databases</strong></li>
+    <li>Create database: <code>stem_invoice</code> (or <code>yourusername_stem</code>)</li>
+    <li>Create user: <code>stem_user</code> with a strong password</li>
+    <li>Add user to database with <strong>ALL PRIVILEGES</strong></li>
+  </ol>
+</div>
+
+<div class="step">
+  <strong>Step 3 — Import database schema</strong>
+  <ol>
+    <li>In cPanel → <strong>phpMyAdmin</strong></li>
+    <li>Select your new database</li>
+    <li>Click <strong>Import</strong> → Choose <code>database.sql</code> → Click <strong>Go</strong></li>
+  </ol>
+</div>
+
+<div class="step">
+  <strong>Step 4 — Upload files via File Manager</strong>
+  <ol>
+    <li>In cPanel → <strong>File Manager</strong> → go to <code>public_html/</code></li>
+    <li>Upload <code>ispark_invoice.zip</code> → Extract it</li>
+    <li>You should now have <code>public_html/ispark_invoice/</code></li>
+  </ol>
+  <em>Or use FTP: FileZilla → upload the <code>ispark_invoice</code> folder to <code>public_html/</code></em>
+</div>
+
+<div class="step">
+  <strong>Step 5 — Update api/config.php</strong><br/>
+  Edit <code>public_html/ispark_invoice/api/config.php</code>:
+  <pre>define('DB_HOST', 'localhost');
+define('DB_NAME', 'yourusername_stem_invoice');  // cPanel prefixes DB names
+define('DB_USER', 'yourusername_stem_user');      // cPanel prefixes usernames
+define('DB_PASS', 'your_strong_password_here');
+define('DB_PORT', '3306');</pre>
+</div>
+
+<div class="step">
+  <strong>Step 6 — Access the application</strong><br/>
+  Visit: <code>https://yourdomain.com/ispark_invoice/frontend/</code><br/>
+  Login: <code>admin</code> / <code>admin123</code> — <strong>Change the password immediately!</strong>
+</div>
+
+<!-- ═══ SECTION 4: CONFIG REFERENCE ═══ -->
+<h2>⚙️ Configuration Reference</h2>
+
+<h3>api/config.php — Key Settings</h3>
+<table>
+  <tr><th>Setting</th><th>Description</th><th>Example</th></tr>
+  <tr><td><code>DB_HOST</code></td><td>MySQL server hostname</td><td><code>localhost</code></td></tr>
+  <tr><td><code>DB_NAME</code></td><td>Database name</td><td><code>stem_invoice</code></td></tr>
+  <tr><td><code>DB_USER</code></td><td>Database username</td><td><code>stem_user</code></td></tr>
+  <tr><td><code>DB_PASS</code></td><td>Database password</td><td><code>yourpassword</code></td></tr>
+  <tr><td><code>SMTP_HOST</code></td><td>Mail server (for email feature)</td><td><code>mail.yourdomain.com</code></td></tr>
+  <tr><td><code>SMTP_USER</code></td><td>Email address</td><td><code>admin@yourcompany.com</code></td></tr>
+  <tr><td><code>SMTP_PASS</code></td><td>Email password</td><td><code>yourpassword</code></td></tr>
+</table>
+
+<!-- ═══ SECTION 5: USER ROLES ═══ -->
+<h2>👥 User Roles &amp; Permissions</h2>
+<table>
+  <tr><th>Feature</th><th>Admin</th><th>Manager</th><th>Accountant</th></tr>
+  <tr><td>Dashboard</td><td>✅</td><td>✅</td><td>✅</td></tr>
+  <tr><td>Schools (view/add/edit)</td><td>✅</td><td>✅</td><td>✅</td></tr>
+  <tr><td>Invoices (all)</td><td>✅</td><td>✅</td><td>✅</td></tr>
+  <tr><td>Payments</td><td>✅</td><td>❌</td><td>✅</td></tr>
+  <tr><td>Reports</td><td>✅</td><td>❌</td><td>✅</td></tr>
+  <tr><td>User Management</td><td>✅</td><td>❌</td><td>❌</td></tr>
+  <tr><td>Delete invoices/schools</td><td>✅</td><td>❌</td><td>✅</td></tr>
+</table>
+
+<!-- ═══ SECTION 6: TROUBLESHOOTING ═══ -->
+<h2>🔧 Troubleshooting</h2>
+
+<table>
+  <tr><th>Problem</th><th>Cause</th><th>Fix</th></tr>
+  <tr>
+    <td>404 on login</td>
+    <td>Wrong folder path</td>
+    <td>Make sure folder is named <code>ispark_invoice</code> exactly (case-sensitive on Linux)</td>
+  </tr>
+  <tr>
+    <td>500 Internal Server Error</td>
+    <td>PHP error or DB config wrong</td>
+    <td>Check <code>api/config.php</code> credentials; enable PHP error display temporarily</td>
+  </tr>
+  <tr>
+    <td>"Access denied for user"</td>
+    <td>Wrong DB credentials</td>
+    <td>Verify <code>DB_USER</code> and <code>DB_PASS</code> in <code>config.php</code></td>
+  </tr>
+  <tr>
+    <td>Blank page / JS errors</td>
+    <td>Browser cache</td>
+    <td>Press <strong>Ctrl+Shift+R</strong> to hard-refresh</td>
+  </tr>
+  <tr>
+    <td>CORS error in console</td>
+    <td>.htaccess not working</td>
+    <td>Ensure Apache <code>mod_headers</code> and <code>mod_rewrite</code> are enabled</td>
+  </tr>
+  <tr>
+    <td>XLSX tracking warning</td>
+    <td>Edge browser policy</td>
+    <td>Harmless warning — Excel export still works. Or host XLSX locally.</td>
+  </tr>
+  <tr>
+    <td>Invalid username or password</td>
+    <td>DB not imported or wrong hash</td>
+    <td>Re-import <code>database.sql</code>; default is <code>admin</code> / <code>admin123</code></td>
+  </tr>
+</table>
+
+<!-- ═══ SECTION 7: CLAUDE CODE GUIDE ═══ -->
+<h2>🤖 Guide: Using Claude Code for Beginners (Vibe Coding)</h2>
+
+<p>You mentioned wanting to use <strong>Claude Code</strong> to build web applications as a product manager — here's how to get started effectively:</p>
+
+<h3>What is Claude Code?</h3>
+<p>Claude Code is an AI coding assistant you run from your terminal. You describe what you want in plain English, and it writes, edits, and manages your entire codebase for you.</p>
+
+<h3>Getting Started</h3>
+<div class="step">
+  <strong>1. Install Node.js</strong> from <a href="https://nodejs.org" target="_blank">nodejs.org</a><br/>
+  <strong>2. Install Claude Code:</strong>
+  <pre>npm install -g @anthropic-ai/claude-code</pre>
+  <strong>3. Navigate to your project folder and run:</strong>
+  <pre>cd my-project
+claude</pre>
+</div>
+
+<h3>How to Prompt Effectively</h3>
+<table>
+  <tr><th>Instead of this</th><th>Say this</th></tr>
+  <tr><td>"Make a form"</td><td>"Create a school registration form with fields: name, address, district, state, pincode, contact person, phone, email, number of students. Validate all fields before submit."</td></tr>
+  <tr><td>"Fix the bug"</td><td>"The login button gives a 404 error. The API is at /api/auth.php?action=login and expects POST with JSON body {username, password}. Fix it."</td></tr>
+  <tr><td>"Add a feature"</td><td>"Add a search box above the schools table that filters rows by school name in real-time without reloading the page."</td></tr>
+</table>
+
+<h3>Tips for Product Managers Using Vibe Coding</h3>
+<ul>
+  <li>📄 <strong>Write an SRS first</strong> — Claude Code works best when you give it detailed requirements</li>
+  <li>🔁 <strong>Iterate in small steps</strong> — Ask for one feature at a time, test it, then move on</li>
+  <li>📸 <strong>Share screenshots</strong> — Claude can see images and fix UI issues from screenshots</li>
+  <li>📁 <strong>Share your file structure</strong> — Always tell Claude where files are located</li>
+  <li>🐛 <strong>Paste error messages exactly</strong> — Don't paraphrase errors; copy them verbatim</li>
+  <li>✅ <strong>Test after each change</strong> — Don't pile up 10 changes before testing</li>
+</ul>
+
+<div class="success">
+  📚 <strong>More prompting tips:</strong> <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank">docs.claude.com — Prompt Engineering Guide</a>
+</div>
+
+<hr/>
+<p style="color:#aaa;font-size:12px;text-align:center;">
+  iSpark Learning Solutions Pvt Ltd © 2026 · Built with PHP + MySQL + Vanilla JS
+</p>
+</body>
+</html>
