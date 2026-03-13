@@ -56,10 +56,11 @@ header('X-Frame-Options: SAMEORIGIN');
 <meta charset="UTF-8">
 <title>Invoice <?= htmlspecialchars($inv['invoice_number']) ?></title>
 <style>
+  @page { size: A4; margin: 0; }
   @media print {
-    body { background: none; }
+    html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .no-print { display: none !important; }
-    .page { margin: 0; box-shadow: none; border: none; }
+    .page { margin: 0 !important; box-shadow: none !important; border: none !important; }
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12pt; color: #333; background:#f0f2f5; }
@@ -73,18 +74,21 @@ header('X-Frame-Options: SAMEORIGIN');
     background-image: url("<?= $watermarkImg ?>");
     background-size: 100%; 
     background-repeat: no-repeat; background-position: center;
-    opacity: 0.35; z-index: 0; pointer-events: none;
+    opacity: 0.60; z-index: 0; pointer-events: none;
   }
   .content { padding: 30px 45px; position: relative; z-index: 1; flex: 1; }
   
   .logo-section { text-align: center; margin-bottom: 5px; }
   .logo-section img { height: 60px; }
   
-  .header-divider { 
-    display: flex; height: 4px; margin: 15px 0; width: 100%;
+  /* Divider: use solid colored borders, always visible in print */
+  .header-divider {
+    display: flex; width: 100%; height: 2px; margin: 12px 0;
   }
-  .divider-orange { background: #f39c12; flex: 1; }
-  .divider-black { background: #000; flex: 1; }
+  .divider-1 { flex: 0 0 62%; background: #eb6819 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .divider-gap { flex: 0 0 2%; background: transparent !important; }
+  .divider-2 { flex: 0 0 24%; background: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .divider-3 { flex: 0 0 12%; background: #eb6819 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   
   .invoice-header { text-align: center; margin-bottom: 20px; }
   .invoice-header h1 { font-size: 18pt; letter-spacing: 2px; color: #000; font-weight: 700; margin-bottom: 2px;}
@@ -106,8 +110,8 @@ header('X-Frame-Options: SAMEORIGIN');
   .address-text { font-size: 10.5pt; color: #000; line-height: 1.4; }
   
   .main-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #000; }
-  .main-table th { background: #bdbdbdff; color: #000000ff; border: 1px solid #000; padding: 12px 8px; font-weight: 500; text-align: center; font-size: 12pt; }
-  .main-table td { border: 1.5px solid #000; padding: 8px 8px; vertical-align: middle; font-size: 10.5pt; color: #000; }
+  .main-table th { background: #bdbdbdff; color: #000000ff; border: 2px solid #000; padding: 12px 8px; font-weight: 500; text-align: center; font-size: 12pt; }
+  .main-table td { border: 2px solid #000; padding: 8px 8px; vertical-align: middle; font-size: 10.5pt; color: #000; }
   
   .totals-row td { font-weight: 600; }
   .total-display-row { background: #f8fafc; color: #000 !important; font-size: 12pt; }
@@ -115,22 +119,47 @@ header('X-Frame-Options: SAMEORIGIN');
   
   .amount-words { font-weight: bold; margin-bottom: 25px; font-size: 10.5pt; color: #000;}
   
-  .bottom-grid { display: flex; justify-content: space-between; margin-top: 10px; }
-  .payment-details { width: 55%; }
+  .bottom-section { margin-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .payment-details { width: 60%; }
   .payment-details-table { width: 100%; border-collapse: collapse; border: 2px solid #000; }
-  .payment-details-table td { border: 1.5px solid #000; padding: 6px 12px; font-size: 12pt; color: #000; }
-  .payment-details-table td:first-child { font-weight: 600; background: #fff; color: #00008B; width: 40%; }
-  
-  .signature-section { width: 40%; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
-  .signature-label { font-weight: bold; margin-bottom: 5px; color: #00008B; }
-  .signature-box { position: relative; width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+  .payment-details-table td { border: 2px solid #000; padding: 6px 18px; font-size: 9.5pt; color: #000; }
+  .payment-details-table td:first-child { font-weight: 600; background: #fff; color: #00008B; width: 33%; }
+
+  .signature-section { margin-top: 15px; text-align: left; float: left; width: 45%; display: flex; flex-direction: column; align-items: center;  }
+  .signature-label { font-weight: bold; margin-bottom: 0; color: #00008B; font-size: 11pt; }
+  .signature-box { display: flex; align-items: center; justify-content: center; min-height: 60px; width: 100%; position: relative; }
   .signature-box img { 
-    height: 75px; 
+    height: 65px; 
     mix-blend-mode: multiply; 
     margin: -10px 0;
+
   }
-  .signatory-name { font-weight: bold; font-size: 12pt; margin-top: 5px; border-top: 2px solid #000; padding-top: 5px; display: inline-block; width: 80%; }
-  .signatory-title { font-size: 10.5pt; color: #64748b; }
+
+
+.header-border {
+  display: flex;
+  width: 100%;
+  height: 3px;
+  margin: 5px 0;
+  font-weight: bold;
+}
+
+.header-border .line-orange {
+  width: 65%;
+  background-color: #ffa600ff;
+  height: px;
+   font-weight: bold;
+}
+
+.header-border .line-black {
+  width: 65%;
+  background-color: #000000;
+  height: px;
+   font-weight: bold;
+}
+
+  .signatory-name { font-weight: bold; font-size: 11.5pt; margin-top: 0; padding-top: 0px; display: inline-block; width: 60%;  color: #333; text-align: center; }
+  .signatory-title { font-size: 10.5pt; color: #64748b; text-align: center; margin-top: 0; }
   
   .footer-img-wrap { width: 100%; margin-top: auto; }
   .footer-img-wrap img { width: 100%; display: block; }
@@ -157,10 +186,11 @@ header('X-Frame-Options: SAMEORIGIN');
       <img src="<?= $logoImg ?>" alt="iSpark Logo"/>
     </div>
     
-    <div class="header-divider">
-      <div class="divider-black"></div>
-      <div class="divider-orange"></div>
-    </div>
+ <div class="header-border">
+  <div class="line-orange"></div>
+  <div class="line-black"></div>
+  <div class="line-orange"></div>
+</div>
     
     <div class="invoice-header">
       <h1>TAX INVOICE</h1>
@@ -208,7 +238,7 @@ header('X-Frame-Options: SAMEORIGIN');
         <tr>
           <td align="center">1.</td>
           <td>
-            <b>STEM Training Services for the month of <?= $monthLabel ?></b>.<br/>
+            STEM Training Services for the month of <b><?= $monthLabel ?></b>.<br/>
             (<?= $students ?> Students X <?= number_format($rate, 0) ?>)/<?= $divisor ?> months
           </td>
           <td align="center">90318000</td>
@@ -245,7 +275,7 @@ header('X-Frame-Options: SAMEORIGIN');
       (<?= htmlspecialchars($words) ?>)
     </div>
 
-    <div class="bottom-grid">
+    <div class="bottom-section">
       <div class="payment-details">
         <div style="font-weight:bold; margin-bottom:5px; color: #1a3a5c;">Bank / Payment Details</div>
         <table class="payment-details-table">
@@ -260,7 +290,7 @@ header('X-Frame-Options: SAMEORIGIN');
         <div class="signature-label">Authorized Signatory</div>
         <div class="signature-box">
           <?php if ($signatureImg): ?>
-            <img src="<?= $signatureImg ?>" alt="Signature"/>
+            <img src="<?= $signatureImg ?>" alt="Signature" style="height:65px;mix-blend-mode:multiply;display:block;"/>
           <?php endif; ?>
         </div>
         <div class="signatory-name">(P H Mohanamurthy)</div>
@@ -270,6 +300,7 @@ header('X-Frame-Options: SAMEORIGIN');
   </div>
 
   <?php if ($footerImg): ?>
+
   <div class="footer-img-wrap">
     <img src="<?= $footerImg ?>" alt="Footer Contact Details"/>
   </div>

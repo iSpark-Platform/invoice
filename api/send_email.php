@@ -4,41 +4,46 @@ setCORSHeaders();
 
 validateToken();
 
-$id     = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $method = $_SERVER['REQUEST_METHOD'];
 
-if ($method !== 'POST') jsonError('Method not allowed', 405);
-if (!$id) jsonError('Invoice ID required');
+if ($method !== 'POST')
+  jsonError('Method not allowed', 405);
+if (!$id)
+  jsonError('Invoice ID required');
 
-$db   = getDB();
+$db = getDB();
 $stmt = $db->prepare(
-    "SELECT i.*, s.name AS school_name, s.district AS school_district,
+  "SELECT i.*, s.name AS school_name, s.district AS school_district,
             s.address, s.state, s.pincode, s.email AS school_email
      FROM invoices i JOIN schools s ON s.id = i.school_id WHERE i.id = ?"
 );
 $stmt->execute([$id]);
 $inv = $stmt->fetch();
-if (!$inv) jsonError('Invoice not found', 404);
+if (!$inv)
+  jsonError('Invoice not found', 404);
 
-$body     = json_decode(file_get_contents('php://input'), true);
-$toEmail  = $body['to_email']  ?? $inv['school_email'];
-$ccEmail  = $body['cc_email']  ?? '';
+$body = json_decode(file_get_contents('php://input'), true);
+$toEmail = $body['to_email'] ?? $inv['school_email'];
+$ccEmail = $body['cc_email'] ?? '';
 $bccEmail = $body['bcc_email'] ?? '';
-$subject  = $body['subject']   ?? '';
+$subject = $body['subject'] ?? '';
 
 // Invoice month label
 if ($inv['invoice_month']) {
-    $dt         = new DateTime($inv['invoice_month'] . '-01');
-    $monthLabel = $dt->format('F Y');
-} else {
-    $dt         = new DateTime($inv['invoice_date']);
-    $monthLabel = $dt->format('F Y');
+  $dt = new DateTime($inv['invoice_month'] . '-01');
+  $monthLabel = $dt->format('F Y');
+}
+else {
+  $dt = new DateTime($inv['invoice_date']);
+  $monthLabel = $dt->format('F Y');
 }
 
 $actualPdfUrl = BASE_URL . "/ispark_invoice/api/invoice_pdf.php?id={$id}";
 
 // ─── Build HTML email body ────────────────────────────────
 $htmlBody = <<<HTML
+
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8">
@@ -95,15 +100,17 @@ $sent = false;
 $error = '';
 
 try {
-    $smtp = new SmtpClient(SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, SMTP_FROM_NAME);
-    $sent = $smtp->send($toEmail, $subject, $htmlBody, $ccEmail, $bccEmail);
-} catch (Exception $e) {
-    $error = $e->getMessage();
+  $smtp = new SmtpClient(SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, SMTP_FROM_NAME);
+  $sent = $smtp->send($toEmail, $subject, $htmlBody, $ccEmail, $bccEmail);
+}
+catch (Exception $e) {
+  $error = $e->getMessage();
 }
 
 if ($sent) {
-    $db->prepare("UPDATE invoices SET status='sent' WHERE id=?")->execute([$id]);
-    jsonResponse(['success' => true, 'message' => 'Email sent successfully!']);
-} else {
-    jsonResponse(['error' => $error ?: 'Failed to send email'], 500);
+  $db->prepare("UPDATE invoices SET status='sent' WHERE id=?")->execute([$id]);
+  jsonResponse(['success' => true, 'message' => 'Email sent successfully!']);
+}
+else {
+  jsonResponse(['error' => $error ?: 'Failed to send email'], 500);
 }

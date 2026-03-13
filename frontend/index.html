@@ -1,122 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>iSpark Invoice Management</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=2.0"/>
-<link rel="stylesheet" href="css/components.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iSpark Invoice Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=2.0" />
+  <link rel="stylesheet" href="css/components.css" />
 </head>
+
 <body>
-<!-- ═══ LOGIN PAGE ════════════════════════════════════════ -->
-<div id="login-page" style="display:none;">
-  <div class="login-bg">
-    <div class="login-card">
-      <div class="login-logo">
-        <img src="../brand/iSpark.png" alt="iSpark Logo" style="height: 60px;" />
-      </div>
-      <div class="login-title">Invoice Management</div>
-      <div class="login-subtitle">Sign in to your account</div>
+  <!-- ═══ LOGIN PAGE ════════════════════════════════════════ -->
+  <div id="login-page" style="display:none;">
+    <div class="login-bg">
+      <div class="login-card">
+        <div class="login-logo">
+          <img src="../brand/iSpark.png" alt="iSpark Logo" style="height: 60px;" />
+        </div>
+        <div class="login-title">Invoice Management</div>
+        <div class="login-subtitle">Sign in to your account</div>
 
-      <div id="login-error" class="alert alert-error" style="display:none;"></div>
+        <div id="login-error" class="alert alert-error" style="display:none;"></div>
 
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" id="login-username" placeholder="Enter username" class="form-input"
-          onkeydown="if(event.key==='Enter') doLogin()"/>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="login-username" placeholder="Enter username" class="form-input"
+            onkeydown="if(event.key==='Enter') doLogin()" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="Enter password" class="form-input"
+            onkeydown="if(event.key==='Enter') doLogin()" />
+        </div>
+        <button class="btn btn-primary btn-block" id="login-btn" onclick="doLogin()">
+          Sign In
+        </button>
+        <div class="login-footer">iSpark Learning Solutions Pvt Ltd © 2026</div>
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="login-password" placeholder="Enter password" class="form-input"
-          onkeydown="if(event.key==='Enter') doLogin()"/>
-      </div>
-      <button class="btn btn-primary btn-block" id="login-btn" onclick="doLogin()">
-        Sign In
-      </button>
-      <div class="login-footer">iSpark Learning Solutions Pvt Ltd © 2026</div>
     </div>
   </div>
-</div>
 
-<!-- ═══ APP LAYOUT ════════════════════════════════════════ -->
-<div id="app-layout" style="display:none;">
-  <div class="layout">
-    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <!-- ═══ APP LAYOUT ════════════════════════════════════════ -->
+  <div id="app-layout" style="display:none;">
+    <div class="layout">
+      <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">
-          <img src="../brand/iSpark.png" alt="iSpark Logo" style="height: 40px; width: 100px;" />
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-logo">
+            <img src="../brand/iSpark.png" alt="iSpark Logo" style="height: 40px; width: 100px;" />
+          </div>
+          <button class="sidebar-close" onclick="toggleSidebar()">
+            <span class="material-icons">close</span>
+          </button>
         </div>
-        <button class="sidebar-close" onclick="toggleSidebar()">
+
+        <nav class="sidebar-nav" id="sidebar-menu">
+          <!-- Populated by JS based on role -->
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div class="sidebar-action" onclick="openChangePwd()">
+            <span class="material-icons">vpn_key</span> Change Password
+          </div>
+          <div class="sidebar-action logout" onclick="doLogout()">
+            <span class="material-icons">logout</span> Sign Out
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main">
+        <div class="topbar">
+          <div class="topbar-left">
+            <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()">
+              <span class="material-icons">menu</span>
+            </button>
+            <span class="topbar-title">iSpark Invoice System</span>
+          </div>
+          <span class="topbar-user" id="topbar-user"></span>
+        </div>
+        <div class="content" id="page-content">
+          <!-- Pages injected here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GLOBAL MODAL ════════════════════════════════════ -->
+  <div id="global-modal" class="modal-overlay" style="display:none;" onclick="closeModal(event)">
+    <div class="modal-box" id="modal-box">
+      <div class="modal-header">
+        <span id="modal-title"></span>
+        <button class="modal-close" onclick="closeModal()">
           <span class="material-icons">close</span>
         </button>
       </div>
-
-      <nav class="sidebar-nav" id="sidebar-menu">
-        <!-- Populated by JS based on role -->
-      </nav>
-
-      <div class="sidebar-bottom">
-  <div class="sidebar-action" onclick="openChangePwd()">
-    <span class="material-icons">vpn_key</span> Change Password
-  </div>
-  <div class="sidebar-action logout" onclick="doLogout()">
-    <span class="material-icons">logout</span> Sign Out
-  </div>
-</div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main">
-      <div class="topbar">
-        <div class="topbar-left">
-          <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()">
-            <span class="material-icons">menu</span>
-          </button>
-          <span class="topbar-title">iSpark Invoice System</span>
-        </div>
-        <span class="topbar-user" id="topbar-user"></span>
-      </div>
-      <div class="content" id="page-content">
-        <!-- Pages injected here -->
-      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
     </div>
   </div>
-</div>
 
-<!-- ═══ GLOBAL MODAL ════════════════════════════════════ -->
-<div id="global-modal" class="modal-overlay" style="display:none;" onclick="closeModal(event)">
-  <div class="modal-box" id="modal-box">
-    <div class="modal-header">
-      <span id="modal-title"></span>
-      <button class="modal-close" onclick="closeModal()">
-        <span class="material-icons">close</span>
-      </button>
-    </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-footer" id="modal-footer"></div>
-  </div>
-</div>
-
-<!-- ═══ TOAST ════════════════════════════════════════════ -->
-<div id="toast-container"></div>
-<!-- Scripts -->
-<script src="js/xlsx.full.min.js"></script>
-<script src="js/api.js?v=1.9"></script>
-<script src="js/utils.js?v=1.9"></script>
-<script src="js/auth.js?v=1.9"></script>
-<script src="js/pages/dashboard.js?v=1.9"></script>
-<script src="js/pages/schools.js?v=1.9"></script>
-<script src="js/pages/invoices.js?v=1.9"></script>
-<script src="js/pages/payments.js?v=1.9"></script>
-<script src="js/pages/reports.js?v=1.9"></script>
-<script src="js/pages/users.js?v=1.9"></script>
-<script src="js/app.js?v=1.9"></script>
+  <!-- ═══ TOAST ════════════════════════════════════════════ -->
+  <div id="toast-container"></div>
+  <!-- Scripts -->
+  <script src="js/xlsx.full.min.js"></script>
+  <script src="js/api.js?v=1.9"></script>
+  <script src="js/utils.js?v=1.9"></script>
+  <script src="js/auth.js?v=1.9"></script>
+  <script src="js/pages/dashboard.js?v=1.9"></script>
+  <script src="js/pages/schools.js?v=1.9"></script>
+  <script src="js/pages/invoices.js?v=1.9"></script>
+  <script src="js/pages/payments.js?v=1.9"></script>
+  <script src="js/pages/reports.js?v=1.9"></script>
+  <script src="js/pages/users.js?v=1.9"></script>
+  <script src="js/app.js?v=1.9"></script>
 </body>
+
 </html>
