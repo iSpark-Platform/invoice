@@ -5,7 +5,7 @@ const _scriptBase = (() => {
   const idx = path.indexOf('/frontend/');
   return idx !== -1 ? path.substring(0, idx) : '';
 })();
-const API_BASE = _scriptBase + '/api';
+const API_BASE = _scriptBase + '/backend';
 
 async function apiFetch(endpoint, options = {}) {
   const token = localStorage.getItem('access_token');
